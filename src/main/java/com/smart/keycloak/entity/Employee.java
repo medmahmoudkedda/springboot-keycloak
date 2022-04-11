@@ -1,4 +1,4 @@
-package com.javatechie.keycloak.entity;
+package com.smart.keycloak.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
