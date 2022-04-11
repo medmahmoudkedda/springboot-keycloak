@@ -7,8 +7,12 @@ spring:
       enabled: true
 
 keycloak:
-  realm: javatechie
-  auth-server-url: http://localhost:8180/auth
-  resource: springboot-keycloak
+  realm: smart
+  auth-server-url: http://localhost:8080/auth
+  resource: springboot
   public-client: true
-  bearer-only: true
+  
+  #realm: test
+  #auth-server-url: https://iam.smartmssa.com:8443/auth/
+  #resource: test-id
+  #public-client: true

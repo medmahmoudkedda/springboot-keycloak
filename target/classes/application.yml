@@ -1,0 +1,18 @@
+server:
+  port: 9090
+
+spring:
+  h2:
+    console:
+      enabled: true
+
+keycloak:
+  realm: smart
+  auth-server-url: http://localhost:8080/auth
+  resource: springboot
+  public-client: true
+  
+  #realm: test
+  #auth-server-url: https://iam.smartmssa.com:8443/auth/
+  #resource: test-id
+  #public-client: true

@@ -8,7 +8,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-@NoArgsConstructor
 @Data
 public class Employee {
     @Id
@@ -16,7 +15,9 @@ public class Employee {
     private int id;
     private String name;
     private double salary;
-
+    
+    public Employee(){}
+    
     public Employee(String name, double salary) {
         this.name = name;
         this.salary = salary;
