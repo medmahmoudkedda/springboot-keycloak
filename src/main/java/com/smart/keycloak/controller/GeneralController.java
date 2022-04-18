@@ -1,6 +1,5 @@
 package com.smart.keycloak.controller;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,21 +7,21 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.keycloak.AuthorizationContext;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessToken.Access;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.smart.keycloak.entity.Employee;
 import com.smart.keycloak.service.EmployeeService;
@@ -32,6 +31,7 @@ public class GeneralController {
 
 	@Autowired
 	private EmployeeService service;
+
 
 	// this method can be accessed by user whose role is user
 	@GetMapping("/{employeeId}")
@@ -59,30 +59,40 @@ public class GeneralController {
 		return "U R OUT";
 	}
 
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.FORBIDDEN)
-//    public String exceptionHandler() {
-//        return "SORRY U R NOT ALLOWED";
-//    }
-
 	@GetMapping(path = "/secret")
-	@PreAuthorize("hasRole('user') and @securityService.hasPermission()") 
+	@PreAuthorize("hasRole('user') and @securityService.hasPermission()")
 	public String customers() {
-		// hasPermission();
 		return "This my private RSA key 789456231";
 	}
 
-	
+	@GetMapping(path = "/resource")
+	@PreAuthorize("hasRole('bank_teller')")
+	public String testresource() {
+		return "This is resource test";
+	}
+
+	@GetMapping(path = "/compte")
+	@PreAuthorize("@securityService.hasPermission()")
+	public String account() {
+		return "This is resource account protected";
+	}
+
+	@GetMapping(path = "/timedservice")
+	@PreAuthorize("hasRole('bank_teller')")
+	public String timedservice() {
+		return "This resource is timed in";
+	}
+
 	@Component("securityService")
 	public class SecurityService {
-		
+
 		public boolean hasPermission() {
 
-	        //Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+			// Collection<? extends GrantedAuthority> authorities =
+			// SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 
-
-
-			KeycloakPrincipal principal = (KeycloakPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext()
+					.getAuthentication().getPrincipal();
 			KeycloakSecurityContext session = principal.getKeycloakSecurityContext();
 			AccessToken accessToken = session.getToken();
 			String username = accessToken.getPreferredUsername();
@@ -92,10 +102,45 @@ public class GeneralController {
 			String realmName = accessToken.getIssuer();
 			Access realmAccess = accessToken.getRealmAccess();
 			Set<String> roles = realmAccess.getRoles();
+			
+			
+			System.out.println(username + " " + emailID + " " + lastname + " " + firstname + " " + realmName + " "
+					+ realmAccess + " " + roles);
+			
+			/////
+			
+			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+					.getRequest();
+			
+			System.out.println("Request  = " + request);
 
-			System.out.println(username + " " + emailID + " " + lastname + " " + firstname + " " + realmName + " " + realmAccess + " " + roles);
+			KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) request
+					.getAttribute(KeycloakSecurityContext.class.getName());
+			System.out.println("ksc = " + keycloakSecurityContext);
+			System.out.println(keycloakSecurityContext.getAuthorizationContext());
+			AuthorizationContext authzContext = keycloakSecurityContext.getAuthorizationContext();
+
+			// AuthorizationContext authzContext = session.getAuthorizationContext();
+//			  if (authzContext.hasScopePermission("brands:write")) {
+//			 
+//			    																
+//			  }
+
+			if (authzContext.hasResourcePermission("View Account Resource Permission")) {
+				System.out.println("Your are allowed");
+				return true;
+
+			}
+
+			////
+
+			System.out.println(username + " " + emailID + " " + lastname + " " + firstname + " " + realmName + " "
+					+ realmAccess + " " + roles);
 
 			Map<String, Object> customClaims = accessToken.getOtherClaims();
+
+			System.out.println(
+					"Line = " + principal.getKeycloakSecurityContext().getToken().getOtherClaims().get("project"));
 
 			if (customClaims.containsKey("project")) {
 				String pro = String.valueOf(customClaims.get("project"));
@@ -103,7 +148,8 @@ public class GeneralController {
 				return true;
 			}
 
-			System.out.println("Line = " + principal.getKeycloakSecurityContext().getToken().getOtherClaims().get("project"));
+			System.out.println(
+					"Line = " + principal.getKeycloakSecurityContext().getToken().getOtherClaims().get("project"));
 //	        for (PermissionEnum permission : permissions) {
 //	            if (authorities.contains(new SimpleGrantedAuthority(permission.toString))) {
 //	                return true;
