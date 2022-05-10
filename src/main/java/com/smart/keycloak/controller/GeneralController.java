@@ -13,24 +13,32 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessToken.Access;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.smart.keycloak.entity.Employee;
+import com.smart.keycloak.entity.EntrepriseDTO;
 import com.smart.keycloak.service.EmployeeService;
+import com.smart.keycloak.service.KeycloakAdminServices;
 
 @RestController
 public class GeneralController {
 
 	@Autowired
 	private EmployeeService service;
+	
+	@Autowired
+	private KeycloakAdminServices keycloakAdminServices;
 
 
 	// this method can be accessed by user whose role is user
@@ -82,6 +90,24 @@ public class GeneralController {
 	public String timedservice() {
 		return "This resource is timed in";
 	}
+	
+	@PostMapping("/addentreprise")
+    public String addUser(@RequestBody EntrepriseDTO userDTO){
+		System.out.println("test");
+		keycloakAdminServices.addEntreprise(userDTO);
+        return "User Added Successfully.";
+    }
+	
+	@GetMapping(path = "/getroles")
+	public List<String> getroles() {
+		return keycloakAdminServices.getAllRoles();
+	}
+	
+	@GetMapping(path = "/addrole")
+	public String addRole(@Param("rolename") String rolename) {
+		return keycloakAdminServices.addRealmRole(rolename);
+	}
+	
 
 	@Component("securityService")
 	public class SecurityService {

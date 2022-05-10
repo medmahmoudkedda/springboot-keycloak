@@ -21,41 +21,37 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
-
 //@EnableGlobalMethodSecurity(jsr250Enabled = true)
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Import(KeycloakSpringBootConfigResolver.class)
 public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
-    /**
-     * Registers the KeycloakAuthenticationProvider with the authentication manager.
-     */
-	
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        KeycloakAuthenticationProvider authenticationProvider = new KeycloakAuthenticationProvider();
-        authenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
-        auth.authenticationProvider(authenticationProvider);
-    }
+	/**
+	 * Registers the KeycloakAuthenticationProvider with the authentication manager.
+	 */
 
-    /**
-     * Defines the session authentication strategy.
-     */
-    @Bean
-    @Override
-    protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-        return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
-    }
+	@Autowired
+	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+		KeycloakAuthenticationProvider authenticationProvider = new KeycloakAuthenticationProvider();
+		authenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
+		auth.authenticationProvider(authenticationProvider);
+	}
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-        http
-                .authorizeRequests()
-                .anyRequest().permitAll();
-    }
-    
-    
+	/**
+	 * Defines the session authentication strategy.
+	 */
+	@Bean
+	@Override
+	protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+		return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+	}
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		super.configure(http);
+		http.authorizeRequests().anyRequest().permitAll();
+	}
+
 //    @Bean
 //    public KeycloakConfigResolver keycloakConfigResolver() {
 //        return new KeycloakConfigResolver() {
@@ -81,5 +77,5 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 //            }
 //        };
 //    }
-    
+
 }
